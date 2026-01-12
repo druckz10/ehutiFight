@@ -1,7 +1,8 @@
 {
     "name": "ehutiFight",
     "short_name": "ehutiFight",
-    "start_url": "/",
+    "start_url": "/ehutiFight/",
+    "scope": "/ehutiFight/",
     "display": "standalone",
     "background_color": "#1a1a1a",
     "theme_color": "#000000",
