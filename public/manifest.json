@@ -1,0 +1,21 @@
+{
+    "name": "ehutiFight",
+    "short_name": "ehutiFight",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#1a1a1a",
+    "theme_color": "#000000",
+    "orientation": "landscape",
+    "icons": [
+        {
+            "src": "assets/fighters/fighter_0.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "assets/fighters/fighter_0.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}
