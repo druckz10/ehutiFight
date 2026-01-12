@@ -16,55 +16,96 @@ export default class SelectionScene extends Phaser.Scene {
 
     create() {
         const { width, height } = this.scale;
+        const isMobile = width < 900;
 
-        this.titleText = this.add.text(width / 2, 50, this.getInstructionText(), {
-            fontSize: '40px', fontFamily: 'Arial Black', color: '#ffffff', stroke: '#000000', strokeThickness: 6
+        let titleText = 'PLAYER 1: CHOOSE';
+        if (this.gameMode === 'online') titleText = 'YOUR FIGHTER';
+
+        // Compact Title for Mobile
+        this.titleText = this.add.text(width / 2, isMobile ? 40 : 50, this.getInstructionText(), {
+            fontSize: isMobile ? '32px' : '40px',
+            fontFamily: 'Arial Black',
+            color: '#ffffff',
+            stroke: '#000000',
+            strokeThickness: 6
         }).setOrigin(0.5);
 
-        // --- Info Panel (Right Side) ---
-        const panelX = width - 400; // Right side
-        this.infoContainer = this.add.container(panelX, 150);
+        // --- Layout Variables ---
+        let gridX, gridY, gridScale, gridCols, gridGap;
+        let infoX, infoY, infoScale;
+
+        if (isMobile) {
+            // Mobile: Grid Top, Info Bottom
+            gridX = width / 2 - 250;
+            gridY = 100;
+            gridCols = 4; // 2 rows of 4
+            gridGap = 130;
+            gridScale = 0.8;
+
+            infoX = width / 2;
+            infoY = height - 150;
+            infoScale = 0.8;
+        } else {
+            // Desktop: Grid Left, Info Right
+            gridX = 150;
+            gridY = 150;
+            gridCols = 3;
+            gridGap = 160;
+            gridScale = 1.0;
+
+            infoX = width - 300;
+            infoY = 250;
+            infoScale = 1.0;
+        }
+
+        // --- Info Panel ---
+        this.infoContainer = this.add.container(infoX, infoY);
+        this.infoContainer.setScale(infoScale);
+
+        const infoBgW = 350;
+        const infoBgH = isMobile ? 250 : 400;
 
         // Background
-        const bg = this.add.rectangle(0, 200, 350, 400, 0x000000, 0.8).setStrokeStyle(2, 0xffffff);
+        const bg = this.add.rectangle(0, 0, infoBgW, infoBgH, 0x000000, 0.8).setStrokeStyle(2, 0xffffff);
         this.infoContainer.add(bg);
 
-        // Elements
-        this.infoName = this.add.text(0, 50, 'Select Fighter', { fontSize: '32px', fontStyle: 'bold', color: '#ffff00' }).setOrigin(0.5);
-        this.infoDesc = this.add.text(0, 100, 'Hover or Click to view stats.', { fontSize: '20px', color: '#cccccc', wordWrap: { width: 320 } }).setOrigin(0.5);
-        this.infoSpecial = this.add.text(0, 250, '', { fontSize: '18px', color: '#00ff00', wordWrap: { width: 320 } }).setOrigin(0.5);
+        // Info Elements (Adjusted relative to container center 0,0)
+        const txtY = isMobile ? -80 : -150;
+        this.infoName = this.add.text(0, txtY, 'Select Fighter', { fontSize: '32px', fontStyle: 'bold', color: '#ffff00' }).setOrigin(0.5);
+        this.infoDesc = this.add.text(0, txtY + 40, 'Tap to view stats.', { fontSize: '18px', color: '#cccccc', wordWrap: { width: 320 } }).setOrigin(0.5);
 
-        // Stat Bars Helper
+        // Stat Bars
         this.statBars = [];
         const stats = ['Health', 'Speed', 'Damage'];
         stats.forEach((stat, i) => {
-            const y = 320 + (i * 40);
-            const label = this.add.text(-150, y, stat, { fontSize: '18px', color: '#fff' }).setOrigin(0, 0.5);
-            const barBg = this.add.rectangle(0, y, 200, 10, 0x333333).setOrigin(0, 0.5);
-            const barFill = this.add.rectangle(0, y, 0, 10, 0x00ffff).setOrigin(0, 0.5);
+            const barY = isMobile ? (10 + i * 30) : (50 + i * 40);
+            const label = this.add.text(-150, barY, stat, { fontSize: '18px', color: '#fff' }).setOrigin(0, 0.5);
+            const barBg = this.add.rectangle(0, barY, 200, 10, 0x333333).setOrigin(0, 0.5);
+            const barFill = this.add.rectangle(0, barY, 0, 10, 0x00ffff).setOrigin(0, 0.5);
             this.infoContainer.add([label, barBg, barFill]);
             this.statBars.push(barFill);
         });
 
+        this.infoSpecial = this.add.text(0, isMobile ? 100 : 150, '', { fontSize: '16px', color: '#00ff00', align: 'center', wordWrap: { width: 320 } }).setOrigin(0.5);
         this.infoContainer.add([this.infoName, this.infoDesc, this.infoSpecial]);
 
 
-        // --- Fighter Grid (Left Side) ---
-        const startX = 150;
-        const startY = 150;
-        const cols = 3;
-        const gap = 160;
-
+        // --- Fighter Grid ---
         for (let i = 0; i < 8; i++) {
-            const x = startX + (i % cols) * gap;
-            const y = startY + Math.floor(i / cols) * gap;
+            // Calculate grid pos
+            const r = Math.floor(i / gridCols);
+            const c = (i % gridCols);
 
-            const box = this.add.rectangle(x, y, 140, 140, 0x444444).setInteractive();
+            const x = (isMobile ? (width / 2 - (gridGap * 1.5) + c * gridGap) : (gridX + c * gridGap));
+            const y = gridY + r * gridGap;
+
+            const boxSize = 140 * gridScale;
+
+            const box = this.add.rectangle(x, y, boxSize, boxSize, 0x444444).setInteractive();
             const img = this.add.image(x, y, `fighter_${i}`);
 
-            // Scale and Fit
-            const scale = 120 / Math.max(img.width, img.height);
-            img.setScale(scale);
+            const fitScale = (120 / Math.max(img.width, img.height)) * gridScale;
+            img.setScale(fitScale);
 
             // Interaction
             box.on('pointerover', () => {
@@ -72,13 +113,9 @@ export default class SelectionScene extends Phaser.Scene {
                 this.updateInfoPanel(i);
             });
             box.on('pointerout', () => {
-                if (this.selectedIndex !== i) { // Keep highlight if selected
-                    box.setFillStyle(0x444444);
-                }
+                if (this.selectedIndex !== i) box.setFillStyle(0x444444);
             });
-            box.on('pointerdown', () => {
-                this.selectFighter(i, box);
-            });
+            box.on('pointerdown', () => this.selectFighter(i, box, boxSize));
         }
 
         this.currentSelectionEffect = null;
@@ -109,28 +146,31 @@ export default class SelectionScene extends Phaser.Scene {
         this.statBars[2].width = 200 * (avgDmg / 140);
     }
 
-    selectFighter(index, boxObj) {
-        // Confirmation Logic: Click once to select, Click "CONFIRM" button (or double click) to go.
-        // Let's stick to: Click -> Sets Selection -> Shows CONFIRM Button.
-
+    selectFighter(index, boxObj, size) {
         this.selectedIndex = index;
         this.updateInfoPanel(index);
 
-        // Highlight visual
         if (this.currentSelectionEffect) this.currentSelectionEffect.destroy();
-        this.currentSelectionEffect = this.add.rectangle(boxObj.x, boxObj.y, 140, 140, 0x00ff00, 0).setStrokeStyle(4, 0x00ff00);
+        this.currentSelectionEffect = this.add.rectangle(boxObj.x, boxObj.y, size, size, 0x00ff00, 0).setStrokeStyle(4, 0x00ff00);
 
-        // Show Confirm Button (Creates or reusing)
+        // --- Confirm Button (Always Visible ON TOP) ---
+        // Ensure it's reachable on mobile
+        const { width, height } = this.scale;
+
         if (!this.confirmBtn) {
-            const { width, height } = this.scale;
-            this.confirmBtn = this.add.container(width - 200, height - 100);
+            // Position: Bottom Right on Desktop, Bottom Center on Mobile
+            const btnX = width < 900 ? width / 2 : width - 200;
+            const btnY = height - 60;
+
+            this.confirmBtn = this.add.container(btnX, btnY).setDepth(100); // High Depth!
             const btnBg = this.add.rectangle(0, 0, 200, 60, 0x00cc00).setInteractive();
             const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '28px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
             this.confirmBtn.add([btnBg, btnTxt]);
 
-            btnBg.on('pointerdown', () => this.confirmSelection());
-            btnBg.on('pointerover', () => btnBg.setFillStyle(0x00ff00));
-            btnBg.on('pointerout', () => btnBg.setFillStyle(0x00cc00));
+            btnBg.on('pointerdown', () => {
+                console.log("Confirm Clicked");
+                this.confirmSelection();
+            });
         }
 
         this.confirmBtn.setVisible(true);
