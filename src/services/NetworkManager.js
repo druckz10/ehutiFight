@@ -95,14 +95,17 @@ class NetworkManager {
         this.log(`Joining: ${hostId}`);
 
         const tryConnect = () => {
-            // Revert to reliable: true to test if that was actually better
-            // Or keep it false. Let's try explicit serialization to avoid "binary" errors if that's the issue
-            const conn = this.peer.connect(hostId, { reliable: true });
+            // Attempt JSON serialization for better firewall headers
+            // Reliable: false is faster and often penetrates NAT better
+            const conn = this.peer.connect(hostId, {
+                reliable: false,
+                serialization: 'json'
+            });
             this.handleConnection(conn);
 
             setTimeout(() => {
                 if (!this.conn || !this.conn.open) {
-                    if (this.errorCallback) this.errorCallback("Timeout (15s). Check Logs.");
+                    if (this.errorCallback) this.errorCallback("Timeout. Try different WiFi/LTE.");
                 }
             }, 15000);
         };
