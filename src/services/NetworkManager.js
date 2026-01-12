@@ -135,8 +135,18 @@ class NetworkManager {
     // So simply calling onData(null) works.
 
     cleanUp() {
-        if (this.conn) this.conn.close();
-        if (this.peer) this.peer.destroy();
+        if (this.conn) {
+            this.conn.close();
+            this.conn = null;
+        }
+        if (this.peer) {
+            this.peer.destroy();
+            this.peer = null;
+        }
+        this.myId = null;
+        this.isHost = false;
+        this.connectionCallback = null;
+        this.errorCallback = null;
     }
 }
 
