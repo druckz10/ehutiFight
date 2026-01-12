@@ -74,19 +74,25 @@ export default class SelectionScene extends Phaser.Scene {
         this.infoName = this.add.text(0, txtY, 'Select Fighter', { fontSize: '32px', fontStyle: 'bold', color: '#ffff00' }).setOrigin(0.5);
         this.infoDesc = this.add.text(0, txtY + 40, 'Tap to view stats.', { fontSize: '18px', color: '#cccccc', wordWrap: { width: 320 } }).setOrigin(0.5);
 
-        // Stat Bars
+        // Stat Bars - Extended
         this.statBars = [];
-        const stats = ['Health', 'Speed', 'Damage'];
+        const stats = ['Health', 'Speed', 'Damage', 'Jump', 'Range'];
+
+        // Compact spacing for mobile/desktop
+        const startY = isMobile ? -50 : 50; // Adjusted startY to fit within infoBgH
+        const spacing = isMobile ? 25 : 35;
+
         stats.forEach((stat, i) => {
-            const barY = isMobile ? (10 + i * 30) : (50 + i * 40);
-            const label = this.add.text(-150, barY, stat, { fontSize: '18px', color: '#fff' }).setOrigin(0, 0.5);
-            const barBg = this.add.rectangle(0, barY, 200, 10, 0x333333).setOrigin(0, 0.5);
-            const barFill = this.add.rectangle(0, barY, 0, 10, 0x00ffff).setOrigin(0, 0.5);
+            const barY = startY + (i * spacing);
+            const label = this.add.text(-150, barY, stat, { fontSize: '16px', color: '#fff' }).setOrigin(0, 0.5);
+            const barBg = this.add.rectangle(0, barY, 180, 8, 0x333333).setOrigin(0, 0.5);
+            const barFill = this.add.rectangle(0, barY, 0, 8, 0x00ffff).setOrigin(0, 0.5);
             this.infoContainer.add([label, barBg, barFill]);
             this.statBars.push(barFill);
         });
 
-        this.infoSpecial = this.add.text(0, isMobile ? 100 : 150, '', { fontSize: '16px', color: '#00ff00', align: 'center', wordWrap: { width: 320 } }).setOrigin(0.5);
+        const specialY = startY + (stats.length * spacing) + (isMobile ? 20 : 30); // Adjusted specialY
+        this.infoSpecial = this.add.text(0, specialY, '', { fontSize: '16px', color: '#00ff00', align: 'center', wordWrap: { width: 320 } }).setOrigin(0.5);
         this.infoContainer.add([this.infoName, this.infoDesc, this.infoSpecial]);
 
 
@@ -134,16 +140,20 @@ export default class SelectionScene extends Phaser.Scene {
 
         this.infoName.setText(data.name || 'Unknown');
         this.infoDesc.setText(data.desc || '');
-        this.infoSpecial.setText(`SPECIAL\n${data.special || '???'}`);
+        this.infoSpecial.setText(`SPECIAL: ${data.special || '???'}`);
 
-        // Update Bars (Normalize nicely)
-        // Health: 100-225
-        this.statBars[0].width = 200 * (data.health / 225);
-        // Speed: 50-150
-        this.statBars[1].width = 200 * (data.speed / 150);
-        // Damage (Kick+Jab avg): ~100
+        // Update Bars (Max Width 180)
+        // Health: Max 225
+        this.statBars[0].width = 180 * (data.health / 225);
+        // Speed: Max 150
+        this.statBars[1].width = 180 * (data.speed / 150);
+        // Damage: Max 150 (Kick/Jab)
         const avgDmg = (data.kick + data.jab) / 2;
-        this.statBars[2].width = 200 * (avgDmg / 140);
+        this.statBars[2].width = 180 * (avgDmg / 150);
+        // Jump: Max 150
+        this.statBars[3].width = 180 * (data.jump / 150);
+        // Range: Max 150
+        this.statBars[4].width = 180 * (data.range / 150);
     }
 
     selectFighter(index, boxObj, size) {
@@ -160,11 +170,13 @@ export default class SelectionScene extends Phaser.Scene {
         if (!this.confirmBtn) {
             // Position: Bottom Right on Desktop, Bottom Center on Mobile
             const btnX = width < 900 ? width / 2 : width - 200;
-            const btnY = height - 60;
+            // Move up to avoid bottom bars on mobile browsers
+            const btnY = height - 80;
 
-            this.confirmBtn = this.add.container(btnX, btnY).setDepth(100); // High Depth!
-            const btnBg = this.add.rectangle(0, 0, 200, 60, 0x00cc00).setInteractive();
-            const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '28px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
+            this.confirmBtn = this.add.container(btnX, btnY).setDepth(100);
+            // Larger Hit Area
+            const btnBg = this.add.rectangle(0, 0, 240, 70, 0x00cc00).setInteractive();
+            const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '32px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
             this.confirmBtn.add([btnBg, btnTxt]);
 
             btnBg.on('pointerdown', () => {
