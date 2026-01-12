@@ -78,15 +78,15 @@ class NetworkManager {
         console.log('Connecting to ' + hostId);
 
         const tryConnect = () => {
-            const conn = this.peer.connect(hostId);
+            const conn = this.peer.connect(hostId, { reliable: true });
             this.handleConnection(conn);
 
             // Timeout safety
             setTimeout(() => {
                 if (!this.conn || !this.conn.open) {
-                    if (this.errorCallback) this.errorCallback("Connection timed out.");
+                    if (this.errorCallback) this.errorCallback("Connection timed out. (15s)");
                 }
-            }, 5000);
+            }, 15000);
         };
 
         if (this.peer.open) {
