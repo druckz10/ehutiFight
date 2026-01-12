@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ehutiFight</title>
+    <link rel="manifest" href="manifest.json">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        #game-container {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Touch Controls */
+        #touch-controls {
+            display: none;
+            /* Hidden by default, shown via JS/CSS on mobile */
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* Let clicks pass through to game if needed, but buttons will catch em */
+            z-index: 100;
+        }
+
+        .touch-btn {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            pointer-events: auto;
+            touch-action: none;
+        }
+
+        .touch-btn:active {
+            background: rgba(255, 255, 255, 0.4);
+        }
+
+        /* D-Pad */
+        #dpad-left {
+            bottom: 40px;
+            left: 20px;
+            width: 60px;
+            height: 60px;
+        }
+
+        #dpad-right {
+            bottom: 40px;
+            left: 160px;
+            width: 60px;
+            height: 60px;
+        }
+
+        #dpad-up {
+            bottom: 110px;
+            left: 90px;
+            width: 60px;
+            height: 60px;
+        }
+
+        #dpad-down {
+            bottom: 40px;
+            left: 90px;
+            width: 60px;
+            height: 60px;
+        }
+
+        /* Actions */
+        #btn-kick {
+            bottom: 60px;
+            right: 40px;
+            width: 80px;
+            height: 80px;
+            background: rgba(255, 0, 0, 0.2);
+        }
+
+        #btn-jab {
+            bottom: 40px;
+            right: 140px;
+            width: 80px;
+            height: 80px;
+            background: rgba(0, 0, 255, 0.2);
+        }
+
+        @media (hover: none) and (pointer: coarse),
+        (max-width: 900px) {
+            #touch-controls {
+                display: block;
+            }
+        }
+    </style>
+  <script type="module" crossorigin src="/ehutiFight/assets/index-BvzonDJh.js"></script>
+  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-tn0RQdqM.css">
+</head>
+
+<body>
+    <div id="game-container"></div>
+
+    <div id="touch-controls">
+        <div id="dpad-left" class="touch-btn"></div>
+        <div id="dpad-right" class="touch-btn"></div>
+        <div id="dpad-up" class="touch-btn"></div>
+        <div id="dpad-down" class="touch-btn"></div>
+
+        <div id="btn-jab" class="touch-btn"></div>
+        <div id="btn-kick" class="touch-btn"></div>
+    </div>
+
+    <script>
+        // Global Touch State
+        window.touchState = {
+            up: false,
+            down: false,
+            left: false,
+            right: false,
+            attack1: false,
+            attack2: false
+        };
+
+        const bindBtn = (id, key) => {
+            const btn = document.getElementById(id);
+            const start = (e) => {
+                e.preventDefault();
+                window.touchState[key] = true;
+            };
+            const end = (e) => {
+                e.preventDefault();
+                window.touchState[key] = false;
+            };
+
+            btn.addEventListener('touchstart', start, {
+                passive: false
+            });
+            btn.addEventListener('touchend', end, {
+                passive: false
+            });
+            btn.addEventListener('mousedown', start); // For testing on PC
+            btn.addEventListener('mouseup', end);
+        };
+
+        window.addEventListener('load', () => {
+            bindBtn('dpad-left', 'left');
+            bindBtn('dpad-right', 'right');
+            bindBtn('dpad-up', 'up');
+            bindBtn('dpad-down', 'down');
+            bindBtn('btn-jab', 'attack1');
+            bindBtn('btn-kick', 'attack2');
+
+            // Force show controls if in URL param (debug)
+            if (window.location.search.includes('mobile')) {
+                document.getElementById('touch-controls').style.display = 'block';
+            }
+        });
+
+        // PWA Reg
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+    </script>
+</body>
+
+</html>
