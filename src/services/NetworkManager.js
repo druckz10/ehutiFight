@@ -23,7 +23,17 @@ class NetworkManager {
             const fullId = `EHUTI-${shortId}`;
             console.log("Blocking ID:", fullId);
 
-            this.peer = new Peer(fullId);
+            const peerConfig = {
+                debug: 2,
+                config: {
+                    iceServers: [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:global.stun.twilio.com:3478' }
+                    ]
+                }
+            };
+
+            this.peer = new Peer(fullId, peerConfig);
 
             this.peer.on('open', (id) => {
                 console.log('My peer ID is: ' + id);
@@ -78,7 +88,7 @@ class NetworkManager {
         console.log(`Attempting to join: ${hostId}`);
 
         const tryConnect = () => {
-            const conn = this.peer.connect(hostId, { reliable: true });
+            const conn = this.peer.connect(hostId);
             this.handleConnection(conn);
 
             // Timeout safety
