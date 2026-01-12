@@ -127,7 +127,7 @@ export default class ModeSelectionScene extends Phaser.Scene {
 
         // Join Button
         this.createButton(width / 2, 350, 'JOIN GAME', () => {
-            const rawInput = window.prompt("Enter Host Code (e.g. A1B2):");
+            const rawInput = window.prompt("Enter Host Code (4 Digits):");
             if (rawInput) {
                 // Sanitize: Uppercase and trim
                 const hostId = rawInput.trim().toUpperCase();

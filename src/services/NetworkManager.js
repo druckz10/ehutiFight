@@ -14,13 +14,13 @@ class NetworkManager {
         if (this.peer) return; // Prevent double init
 
         const generateShortId = () => {
-            // Generates ~4 character alphanumeric string (e.g. "K92X")
-            const randomCode = Math.random().toString(36).substring(2, 6).toUpperCase();
-            return `EHUTI-${randomCode}`;
+            // Generate 4 random digits
+            return Math.floor(1000 + Math.random() * 9000).toString();
         };
 
         const tryCreatePeer = () => {
-            const fullId = generateShortId();
+            const shortId = generateShortId();
+            const fullId = `EHUTI-${shortId}`;
             console.log("Blocking ID:", fullId);
 
             this.peer = new Peer(fullId);
@@ -37,16 +37,16 @@ class NetworkManager {
 
             this.peer.on('error', (err) => {
                 console.error('PeerJS Error:', err);
-                // If ID is taken, try a new one
                 if (err.type === 'unavailable-id') {
                     console.log('ID Collision, retrying...');
                     this.peer.destroy();
                     tryCreatePeer();
                 } else if (err.type === 'peer-unavailable') {
-                    // This happens in joinGame if host not found
-                    if (this.errorCallback) this.errorCallback('Host not found.');
+                    if (this.errorCallback) this.errorCallback(`Host ${shortId} not found/offline.`);
+                } else if (err.type === 'network') {
+                    if (this.errorCallback) this.errorCallback("Network Error. Check WiFi.");
                 } else {
-                    if (this.errorCallback) this.errorCallback(`Connection Error: ${err.type}`);
+                    if (this.errorCallback) this.errorCallback(`Error: ${err.type}`);
                 }
             });
         };
@@ -75,7 +75,7 @@ class NetworkManager {
         this.errorCallback = onError;
 
         const hostId = `EHUTI-${shortCode}`;
-        console.log('Connecting to ' + hostId);
+        console.log(`Attempting to join: ${hostId}`);
 
         const tryConnect = () => {
             const conn = this.peer.connect(hostId, { reliable: true });
