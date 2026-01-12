@@ -84,19 +84,21 @@ export default class ModeSelectionScene extends Phaser.Scene {
             NetworkManager.initialize();
             NetworkManager.hostGame(() => {
                 // On Connected
+                if (this.idPoller) clearInterval(this.idPoller);
                 this.scene.start('SelectionScene', { mode: 'online', role: 'host' });
             });
 
             // Poll for ID
-            const checkId = setInterval(() => {
+            this.idPoller = setInterval(() => {
                 if (NetworkManager.myId) {
                     // Strip the prefix for display
                     const displayCode = NetworkManager.myId.replace('EHUTI-', '');
                     statusText.setText(`YOUR CODE: ${displayCode}`);
 
-                    this.add.text(width / 2, 300, 'Share this code with a friend.', { fontSize: '20px', color: '#aaa' }).setOrigin(0.5);
-                    this.add.text(width / 2, 350, 'Waiting for opponent...', { fontSize: '20px', animate: true, color: '#00ff00' }).setOrigin(0.5);
-                    clearInterval(checkId);
+                    if (!this.waitingText) {
+                        this.add.text(width / 2, 300, 'Share this code with a friend.', { fontSize: '20px', color: '#aaa' }).setOrigin(0.5);
+                        this.waitingText = this.add.text(width / 2, 350, 'Waiting for opponent...', { fontSize: '20px', animate: true, color: '#00ff00' }).setOrigin(0.5);
+                    }
                 }
             }, 500);
         });

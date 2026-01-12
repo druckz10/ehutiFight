@@ -62,6 +62,8 @@ class NetworkManager {
             this.peer.on('open', (id) => {
                 // Ready to be joined
             });
+        } else {
+            // Already has ID, just waiting for connection
         }
         // Return only the suffix for display
         return this.myId ? this.myId.replace('EHUTI-', '') : null;
@@ -75,8 +77,25 @@ class NetworkManager {
         const hostId = `EHUTI-${shortCode}`;
         console.log('Connecting to ' + hostId);
 
-        const conn = this.peer.connect(hostId);
-        this.handleConnection(conn);
+        const tryConnect = () => {
+            const conn = this.peer.connect(hostId);
+            this.handleConnection(conn);
+
+            // Timeout safety
+            setTimeout(() => {
+                if (!this.conn || !this.conn.open) {
+                    if (this.errorCallback) this.errorCallback("Connection timed out.");
+                }
+            }, 5000);
+        };
+
+        if (this.peer.open) {
+            tryConnect();
+        } else {
+            this.peer.on('open', () => {
+                tryConnect();
+            });
+        }
     }
 
     handleConnection(conn) {
