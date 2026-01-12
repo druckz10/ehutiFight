@@ -166,6 +166,37 @@ export default class SelectionScene extends Phaser.Scene {
         this.confirmBtn.setVisible(false); // Hidden by default
         this.currentSelectionEffect = null;
         this.selectedIndex = -1;
+
+        // ONLINE HANDLER
+        if (this.gameMode === 'online') {
+            this.opponentSelection = null;
+            this.mySelection = null;
+            this.hasConfirmed = false;
+
+            NetworkManager.onData((data) => {
+                if (data.type === 'CHARACTER_SELECTED') {
+                    // Sent by Client to Host, or Host to Client (if we want to sync visuals later)
+                    // For now: Host receives Client's choice
+                    if (this.role === 'host') {
+                        this.opponentSelection = data.selection;
+                        console.log("Opponent selected:", this.opponentSelection);
+                        this.checkStartGame();
+                    }
+                } else if (data.type === 'GAME_START') {
+                    // Sent by Host to Client
+                    if (this.role === 'client') {
+                        this.p1Selection = data.p1;
+                        this.p2Selection = data.p2;
+                        this.scene.start('FightScene', {
+                            player1Texture: this.p1Selection,
+                            player2Texture: this.p2Selection,
+                            mode: 'online',
+                            role: 'client'
+                        });
+                    }
+                }
+            });
+        }
     }
 
     getInstructionText() {
@@ -209,12 +240,12 @@ export default class SelectionScene extends Phaser.Scene {
     confirmSelection() {
         if (this.selectedIndex === -1) return;
 
-        // Same logic as before
         const index = this.selectedIndex;
         let finalSelection = index;
         if (index === 7) finalSelection = Math.floor(Math.random() * 7);
-
         const selectionKey = `fighter_${finalSelection}`;
+
+        // Disable UI
         this.confirmBtn.setVisible(false);
         if (this.currentSelectionEffect) {
             this.currentSelectionEffect.destroy();
@@ -222,13 +253,26 @@ export default class SelectionScene extends Phaser.Scene {
         }
         this.selectedIndex = -1;
 
+        // --- ONLINE LOGIC ---
         if (this.gameMode === 'online') {
-            this.p1Selection = selectionKey;
-            this.p2Selection = 'fighter_0';
-            this.startGame();
+            this.hasConfirmed = true;
+            this.mySelection = selectionKey;
+
+            this.infoName.setText("WAITING...");
+            this.infoDesc.setText("Waiting for opponent...");
+
+            if (this.role === 'host') {
+                // Host Logic: Store my choice, check if ready
+                this.p1Selection = this.mySelection; // Host is P1
+                this.checkStartGame();
+            } else {
+                // Client Logic: Send choice to Host
+                NetworkManager.send({ type: 'CHARACTER_SELECTED', selection: this.mySelection });
+            }
             return;
         }
 
+        // --- LOCAL/OFFLINE LOGIC ---
         if (!this.p1Selection) {
             this.p1Selection = selectionKey;
             if (this.gameMode === 'ai') {
@@ -240,6 +284,23 @@ export default class SelectionScene extends Phaser.Scene {
             }
         } else {
             this.p2Selection = selectionKey;
+            this.startGame();
+        }
+    }
+
+    checkStartGame() {
+        // Only Host runs this
+        if (this.role === 'host' && this.hasConfirmed && this.opponentSelection) {
+            this.p2Selection = this.opponentSelection; // Client is P2
+
+            // Tell Client to Start
+            NetworkManager.send({
+                type: 'GAME_START',
+                p1: this.p1Selection,
+                p2: this.p2Selection
+            });
+
+            // Start Level
             this.startGame();
         }
     }
