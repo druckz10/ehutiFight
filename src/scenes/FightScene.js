@@ -210,4 +210,77 @@ export default class FightScene extends Phaser.Scene {
             this.currentItem = null;
         }
     }
+
+    createHUD() {
+        const { width } = this.scale;
+
+        // Player 1 Health Bar
+        this.add.text(50, 30, 'PLAYER 1', { fontSize: '20px', fontStyle: 'bold', color: '#fff' });
+        this.p1HealthBg = this.add.rectangle(50, 60, 300, 20, 0x333333).setOrigin(0, 0.5);
+        this.p1HealthBar = this.add.rectangle(50, 60, 300, 20, 0x00ff00).setOrigin(0, 0.5);
+
+        // Player 2 Health Bar
+        this.add.text(width - 350, 30, 'PLAYER 2', { fontSize: '20px', fontStyle: 'bold', color: '#fff' });
+        this.p2HealthBg = this.add.rectangle(width - 350, 60, 300, 20, 0x333333).setOrigin(0, 0.5);
+        this.p2HealthBar = this.add.rectangle(width - 350, 60, 300, 20, 0x00ff00).setOrigin(0, 0.5);
+
+        // Timer
+        this.timerText = this.add.text(width / 2, 50, '99', { fontSize: '48px', fontStyle: 'bold', color: '#ffff00' }).setOrigin(0.5);
+
+        // Mobile Controls Hint
+        if (width < 900) {
+            this.add.text(width / 2, 100, 'Tap sides to move • Buttons to fight', { fontSize: '16px', color: '#aaa' }).setOrigin(0.5);
+        }
+    }
+
+    updateHealthHUD() {
+        // Update P1
+        const p1Pct = Math.max(0, this.fighter1.hp / this.fighter1.maxHp);
+        this.p1HealthBar.width = 300 * p1Pct;
+
+        // Update P2
+        const p2Pct = Math.max(0, this.fighter2.hp / this.fighter2.maxHp);
+        this.p2HealthBar.width = 300 * p2Pct;
+    }
+
+    update(time, delta) {
+        if (this.isGameOver) return;
+
+        this.fighter1.update(time, delta);
+        this.fighter2.update(time, delta);
+
+        // Keep fighters in bounds
+        this.fighter1.x = Phaser.Math.Clamp(this.fighter1.x, 20, 1260);
+        this.fighter2.x = Phaser.Math.Clamp(this.fighter2.x, 20, 1260);
+
+        this.updateHealthHUD();
+        this.checkWinCondition();
+    }
+
+    checkWinCondition() {
+        if (this.fighter1.hp <= 0) {
+            this.handleGameOver('PLAYER 2 WINS!');
+        } else if (this.fighter2.hp <= 0) {
+            this.handleGameOver('PLAYER 1 WINS!');
+        }
+    }
+
+    handleGameOver(winnerText) {
+        this.isGameOver = true;
+        this.add.rectangle(640, 360, 1280, 720, 0x000000, 0.7);
+        this.add.text(640, 300, 'GAME OVER', { fontSize: '64px', color: '#ff0000', fontStyle: 'bold' }).setOrigin(0.5);
+        this.add.text(640, 400, winnerText, { fontSize: '48px', color: '#ffffff' }).setOrigin(0.5);
+
+        const restartBtn = this.add.text(640, 500, 'TAP TO RESTART', { fontSize: '32px', color: '#ffff00' })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true });
+
+        restartBtn.on('pointerdown', () => {
+            // Clean up network if online
+            if (this.gameMode === 'online') {
+                NetworkManager.cleanUp();
+            }
+            this.scene.start('ModeSelectionScene');
+        });
+    }
 }
