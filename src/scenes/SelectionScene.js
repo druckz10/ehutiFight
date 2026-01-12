@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { FighterStats } from '../config/FighterStats';
+import NetworkManager from '../services/NetworkManager';
 
 export default class SelectionScene extends Phaser.Scene {
     constructor() {
@@ -12,6 +13,14 @@ export default class SelectionScene extends Phaser.Scene {
         this.role = data.role || 'host'; // 'host' or 'client' for online
         this.p1Selection = null;
         this.p2Selection = null;
+
+        // Clear any stale network listeners from previous sessions
+        // This prevents old "GAME_START" events from firing if we are now offline
+        if (this.gameMode !== 'online') {
+            // Import must be present (it is)
+            const NetworkManager = require('../services/NetworkManager').default;
+            if (NetworkManager && NetworkManager.onData) NetworkManager.onData(null);
+        }
     }
 
     create() {

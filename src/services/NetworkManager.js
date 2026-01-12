@@ -126,6 +126,14 @@ class NetworkManager {
         this.dataCallback = callback;
     }
 
+    // In handleConnection above:
+    // if (this.dataCallback) this.dataCallback(data);
+    // This is already checked, so just updating onData is enough,
+    // but I'll make explicit it accepts null.
+    // actually, let's verify handleConnection uses the check.
+    // Yes lines 90-91: if (this.dataCallback) ...
+    // So simply calling onData(null) works.
+
     cleanUp() {
         if (this.conn) this.conn.close();
         if (this.peer) this.peer.destroy();
