@@ -17,8 +17,6 @@ export default class SelectionScene extends Phaser.Scene {
         // Clear any stale network listeners from previous sessions
         // This prevents old "GAME_START" events from firing if we are now offline
         if (this.gameMode !== 'online') {
-            // Import must be present (it is)
-            const NetworkManager = require('../services/NetworkManager').default;
             if (NetworkManager && NetworkManager.onData) NetworkManager.onData(null);
         }
     }
