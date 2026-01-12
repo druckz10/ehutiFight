@@ -234,7 +234,11 @@ export default class FightScene extends Phaser.Scene {
 
         // Switch Characters
         createBtn(width / 2, height / 2 + 180, 'SWITCH CHARACTERS', () => {
-            this.scene.start('SelectionScene', { mode: this.gameMode, difficulty: this.difficulty });
+            this.scene.start('SelectionScene', {
+                mode: this.gameMode,
+                difficulty: this.difficulty,
+                role: (this.gameMode === 'online' && this.role) ? this.role : 'host'
+            });
         });
 
         // Back to Menu

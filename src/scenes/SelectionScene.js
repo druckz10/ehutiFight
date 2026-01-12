@@ -124,6 +124,46 @@ export default class SelectionScene extends Phaser.Scene {
             box.on('pointerdown', () => this.selectFighter(i, box, boxSize));
         }
 
+        // --- Confirm Button (Pre-create to ensure existence) ---
+        // Position: Bottom Right on Desktop, Bottom Center on Mobile
+        const btnX = isMobile ? width / 2 : width - 200;
+        const btnY = height - 120; // Safe zone
+
+        this.confirmBtn = this.add.container(btnX, btnY).setDepth(200);
+
+        const btnBg = this.add.rectangle(0, 0, 260, 80, 0x00cc00)
+            .setInteractive({ useHandCursor: true })
+            .setStrokeStyle(4, 0xffffff);
+
+        const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '36px', fontStyle: 'bold', color: '#ffffff' })
+            .setOrigin(0.5);
+
+        this.confirmBtn.add([btnBg, btnTxt]);
+
+        // Interaction
+        const onConfirm = () => {
+            this.tweens.add({
+                targets: this.confirmBtn,
+                scaleX: 0.9, scaleY: 0.9,
+                duration: 50,
+                yoyo: true,
+                onComplete: () => this.confirmSelection()
+            });
+        };
+
+        // Use pointerdown for immediate feedback
+        btnBg.on('pointerdown', onConfirm);
+
+        // Pulse Effect
+        this.tweens.add({
+            targets: this.confirmBtn,
+            scaleX: 1.05, scaleY: 1.05,
+            duration: 800,
+            yoyo: true,
+            repeat: -1
+        });
+
+        this.confirmBtn.setVisible(false); // Hidden by default
         this.currentSelectionEffect = null;
         this.selectedIndex = -1;
     }
@@ -162,28 +202,6 @@ export default class SelectionScene extends Phaser.Scene {
 
         if (this.currentSelectionEffect) this.currentSelectionEffect.destroy();
         this.currentSelectionEffect = this.add.rectangle(boxObj.x, boxObj.y, size, size, 0x00ff00, 0).setStrokeStyle(4, 0x00ff00);
-
-        // --- Confirm Button (Always Visible ON TOP) ---
-        // Ensure it's reachable on mobile
-        const { width, height } = this.scale;
-
-        if (!this.confirmBtn) {
-            // Position: Bottom Right on Desktop, Bottom Center on Mobile
-            const btnX = width < 900 ? width / 2 : width - 200;
-            // Move up to avoid bottom bars on mobile browsers
-            const btnY = height - 80;
-
-            this.confirmBtn = this.add.container(btnX, btnY).setDepth(100);
-            // Larger Hit Area
-            const btnBg = this.add.rectangle(0, 0, 240, 70, 0x00cc00).setInteractive();
-            const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '32px', fontStyle: 'bold', color: '#ffffff' }).setOrigin(0.5);
-            this.confirmBtn.add([btnBg, btnTxt]);
-
-            btnBg.on('pointerdown', () => {
-                console.log("Confirm Clicked");
-                this.confirmSelection();
-            });
-        }
 
         this.confirmBtn.setVisible(true);
     }
