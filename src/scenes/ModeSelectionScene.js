@@ -63,7 +63,7 @@ export default class ModeSelectionScene extends Phaser.Scene {
     showOfflineOptions() {
         // Clear current buttons (simple way: restart scene with state or just hide/destroy)
         // For MVP, simple clear:
-        this.children.removeAll();
+        this.children.removeAll(true);
 
         const { width, height } = this.scale;
 
@@ -165,7 +165,7 @@ export default class ModeSelectionScene extends Phaser.Scene {
     }
 
     showDifficultyOptions() {
-        this.children.removeAll();
+        this.children.removeAll(true);
         const { width, height } = this.scale;
 
         this.add.text(width / 2, 100, 'SELECT DIFFICULTY', {
