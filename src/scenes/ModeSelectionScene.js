@@ -28,14 +28,36 @@ export default class ModeSelectionScene extends Phaser.Scene {
     }
 
     createButton(x, y, text, callback) {
-        const bg = this.add.rectangle(x, y, 400, 80, 0x444444).setInteractive();
-        const label = this.add.text(x, y, text, { fontSize: '32px', color: '#fff' }).setOrigin(0.5);
+        const container = this.add.container(x, y);
+
+        const bg = this.add.rectangle(0, 0, 400, 80, 0x444444)
+            .setInteractive({ useHandCursor: true })
+            .setStrokeStyle(2, 0x888888);
+
+        const label = this.add.text(0, 0, text, { fontSize: '32px', color: '#fff' })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true }); // Catch clicks on text too
+
+        container.add([bg, label]);
+
+        const onClick = () => {
+            this.tweens.add({
+                targets: container,
+                scaleX: 0.95, scaleY: 0.95,
+                duration: 50,
+                yoyo: true,
+                onComplete: callback
+            });
+        };
+
+        bg.on('pointerup', onClick);
+        label.on('pointerup', onClick);
 
         bg.on('pointerover', () => bg.setFillStyle(0x666666));
         bg.on('pointerout', () => bg.setFillStyle(0x444444));
-        bg.on('pointerdown', callback);
+        label.on('pointerover', () => bg.setFillStyle(0x666666)); // Hover text highlights bg
 
-        return { bg, label };
+        return container;
     }
 
     showOfflineOptions() {
