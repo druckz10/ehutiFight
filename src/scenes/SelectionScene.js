@@ -139,7 +139,6 @@ export default class SelectionScene extends Phaser.Scene {
         this.confirmBtn = this.add.container(btnX, btnY).setDepth(200);
 
         const btnBg = this.add.rectangle(0, 0, 260, 80, 0x00cc00)
-            .setInteractive({ useHandCursor: true })
             .setStrokeStyle(4, 0xffffff);
 
         const btnTxt = this.add.text(0, 0, 'CONFIRM', { fontSize: '36px', fontStyle: 'bold', color: '#ffffff' })
@@ -149,6 +148,7 @@ export default class SelectionScene extends Phaser.Scene {
 
         // Interaction
         const onConfirm = () => {
+            console.log("Confirm clicked");
             this.tweens.add({
                 targets: this.confirmBtn,
                 scaleX: 0.9, scaleY: 0.9,
@@ -158,8 +158,14 @@ export default class SelectionScene extends Phaser.Scene {
             });
         };
 
-        // Use pointerdown for immediate feedback
-        btnBg.on('pointerdown', onConfirm);
+        // Make the container interactive, not just the background
+        this.confirmBtn.setSize(260, 80);
+        this.confirmBtn.setInteractive({ useHandCursor: true });
+        this.confirmBtn.on('pointerdown', onConfirm);
+
+        // Hover effects
+        this.confirmBtn.on('pointerover', () => btnBg.setFillStyle(0x00aa00));
+        this.confirmBtn.on('pointerout', () => btnBg.setFillStyle(0x00cc00));
 
         // Pulse Effect
         this.tweens.add({
