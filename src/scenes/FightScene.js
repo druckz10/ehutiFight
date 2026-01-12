@@ -53,8 +53,36 @@ export default class FightScene extends Phaser.Scene {
         }
 
         // Create Fighters
-        this.fighter1 = new Fighter(this, 300, 400, this.player1Texture, true, p1Keys);
-        this.fighter2 = new Fighter(this, 980, 400, this.player2Texture, p2IsPlayer, p2Keys);
+        let f1IsPlayer = true;
+        let p1Input = p1Keys;
+
+        let f2IsPlayer = p2IsPlayer;
+        let p2Input = p2Keys;
+
+        if (this.gameMode === 'online') {
+            if (this.role === 'client') {
+                // I am Player 2 (Right Side)
+                // Fighter 1 is HOST (Remote)
+                f1IsPlayer = false;
+                p1Input = null;
+
+                // Fighter 2 is ME (Local). I use my local p1Keys to drive it.
+                f2IsPlayer = true;
+                p2Input = p1Keys;
+            } else {
+                // I am Player 1 (Left Side) - Host
+                // Fighter 1 is ME (Local)
+                f1IsPlayer = true;
+                p1Input = p1Keys;
+
+                // Fighter 2 is CLIENT (Remote)
+                f2IsPlayer = false;
+                p2Input = null;
+            }
+        }
+
+        this.fighter1 = new Fighter(this, 300, 400, this.player1Texture, f1IsPlayer, p1Input);
+        this.fighter2 = new Fighter(this, 980, 400, this.player2Texture, f2IsPlayer, p2Input);
 
         // Colliders
         this.physics.add.collider(this.fighter1, ground);
@@ -119,33 +147,20 @@ export default class FightScene extends Phaser.Scene {
     update(time) {
         if (this.isGameOver) return;
 
-        // --- TOUCH INPUT MAPPING (P1 Only) ---
-        if (window.touchState && this.fighter1 && this.fighter1.isPlayer) {
-            // We hack directly into the fighter's keys or override velocity here?
-            // Cleaner: Update the "virtual keys" if they exist, or create a merged input object.
-            // But Fighter.js reads this.keys.left.isDown directly.
+        // --- TOUCH INPUT MAPPING ---
+        if (window.touchState) {
+            let myFighter = this.fighter1;
+            if (this.gameMode === 'online' && this.role === 'client') {
+                myFighter = this.fighter2; // Client controls P2
+            } else if (this.gameMode === 'local') {
+                // Local mode touch usually for P1? P2 uses Keys? Or maybe allow both?
+                // For now, let's assume P1 is primary touch user.
+                myFighter = this.fighter1;
+            }
 
-            // Let's monkey-patch the P1 keys for this frame if touch is active
-            // This is a bit dirty but effective without rewriting Fighter.js input handling
-            const keys = this.fighter1.keys;
-
-            // Helper to merge: (Physical OR Touch)
-            const merge = (keyObj, touchProp) => {
-                // If we haven't backed up the original 'isDown' getter, do it? 
-                // No, Phaser keys update internal state. We can force it.
-                // Actually, let's just use a custom Check in Fighter.js? 
-                // OR: We update the Fighter to accept an "externalInput" object override.
-
-                // Let's try simpler: directly modify key state if touch is true. 
-                // Does NOT work well because Phaser resets keys on update.
-
-                // ALTERNATIVE: We pass window.touchState to Fighter.update?
-            };
-
-            // BEST APPROACH: Modify Fighter.js to look at a global or scene-level input override.
-            // But I cannot modify Fighter.js in this step easily without errors.
-            // So I will set a new property "externalInput" on fighter1 in THIS loop
-            this.fighter1.externalInput = window.touchState;
+            if (myFighter && myFighter.isPlayer) {
+                myFighter.externalInput = window.touchState;
+            }
         }
 
         this.fighter1.update(time);
@@ -154,18 +169,18 @@ export default class FightScene extends Phaser.Scene {
         // ONLINE UPDATE
         if (this.gameMode === 'online') {
             const myFighter = (this.role === 'host') ? this.fighter1 : this.fighter2;
-            const myKeys = myFighter.keys;
+            const myKeys = myFighter.keys; // This should be p1Keys for both (local)
 
-            // Check specific touch override if P1
-            const touch = (this.role === 'host') ? (window.touchState || {}) : {};
+            // Touch override
+            const touch = (window.touchState || {});
 
             const currentInput = {
-                up: myKeys.up.isDown || touch.up,
-                down: myKeys.down.isDown || touch.down,
-                left: myKeys.left.isDown || touch.left,
-                right: myKeys.right.isDown || touch.right,
-                attack1Press: Phaser.Input.Keyboard.JustDown(myKeys.attack1) || touch.attack1,
-                attack2Press: Phaser.Input.Keyboard.JustDown(myKeys.attack2) || touch.attack2
+                up: (myKeys && myKeys.up.isDown) || touch.up,
+                down: (myKeys && myKeys.down.isDown) || touch.down,
+                left: (myKeys && myKeys.left.isDown) || touch.left,
+                right: (myKeys && myKeys.right.isDown) || touch.right,
+                attack1Press: (myKeys && Phaser.Input.Keyboard.JustDown(myKeys.attack1)) || touch.attack1,
+                attack2Press: (myKeys && Phaser.Input.Keyboard.JustDown(myKeys.attack2)) || touch.attack2
             };
 
             NetworkManager.send({ type: 'INPUT', input: currentInput });
