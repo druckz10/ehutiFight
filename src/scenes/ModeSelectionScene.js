@@ -136,13 +136,25 @@ export default class ModeSelectionScene extends Phaser.Scene {
                 const status = this.add.text(width / 2, 300, `CONNECTING TO ${hostId}...`, { fontSize: '32px', color: '#ffff00' }).setOrigin(0.5);
                 const errorText = this.add.text(width / 2, 400, '', { fontSize: '24px', color: '#ff0000' }).setOrigin(0.5);
 
+                // Debug Logs
+                const debugLog = this.add.text(width / 2, 550, '', { fontSize: '14px', color: '#aaaaaa', align: 'center' }).setOrigin(0.5);
+
                 NetworkManager.initialize();
+
+                const logUpdater = setInterval(() => {
+                    if (debugLog.active) {
+                        debugLog.setText(NetworkManager.getLogs());
+                    } else {
+                        clearInterval(logUpdater);
+                    }
+                }, 500);
 
                 // Give it a moment to init own ID before joining
                 setTimeout(() => {
                     NetworkManager.joinGame(hostId,
                         () => {
                             // Success
+                            clearInterval(logUpdater);
                             this.scene.start('SelectionScene', { mode: 'online', role: 'client' });
                         },
                         (errorMsg) => {
@@ -151,7 +163,10 @@ export default class ModeSelectionScene extends Phaser.Scene {
                             errorText.setText(errorMsg + "\nTap BACK to try again.");
 
                             // Add Back Button dynamically
-                            this.createButton(width / 2, 550, 'BACK', () => this.scene.restart());
+                            this.createButton(width / 2, 650, 'BACK', () => { // Moved down
+                                clearInterval(logUpdater);
+                                this.scene.restart();
+                            });
                         }
                     );
                 }, 1000);

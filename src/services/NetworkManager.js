@@ -7,7 +7,19 @@ class NetworkManager {
         this.isHost = false;
         this.connectionCallback = null;
         this.dataCallback = null;
+        this.errorCallback = null; // Fix generic callback
         this.myId = null;
+        this.logs = [];
+    }
+
+    log(msg) {
+        console.log(msg);
+        this.logs.push(msg);
+        if (this.logs.length > 10) this.logs.shift(); // Keep last 10
+    }
+
+    getLogs() {
+        return this.logs.join('\n');
     }
 
     initialize() {
@@ -21,7 +33,7 @@ class NetworkManager {
         const tryCreatePeer = () => {
             const shortId = generateShortId();
             const fullId = `EHUTI-${shortId}`;
-            console.log("Blocking ID:", fullId);
+            this.log("Init ID: " + fullId);
 
             const peerConfig = {
                 debug: 2,
@@ -36,19 +48,20 @@ class NetworkManager {
             this.peer = new Peer(fullId, peerConfig);
 
             this.peer.on('open', (id) => {
-                console.log('My peer ID is: ' + id);
+                this.log('My ID: ' + id);
                 this.myId = id;
             });
 
             this.peer.on('connection', (conn) => {
-                console.log('Incoming connection...');
+                this.log('Incoming conn...');
                 this.handleConnection(conn);
             });
 
             this.peer.on('error', (err) => {
                 console.error('PeerJS Error:', err);
+                this.log('Err: ' + err.type);
                 if (err.type === 'unavailable-id') {
-                    console.log('ID Collision, retrying...');
+                    this.log('ID Taken, retry...');
                     this.peer.destroy();
                     tryCreatePeer();
                 } else if (err.type === 'peer-unavailable') {
@@ -67,15 +80,9 @@ class NetworkManager {
     hostGame(onConnected) {
         this.isHost = true;
         this.connectionCallback = onConnected;
-        // Wait for 'open' event if not already open
         if (!this.myId) {
-            this.peer.on('open', (id) => {
-                // Ready to be joined
-            });
-        } else {
-            // Already has ID, just waiting for connection
+            this.peer.on('open', (id) => { });
         }
-        // Return only the suffix for display
         return this.myId ? this.myId.replace('EHUTI-', '') : null;
     }
 
@@ -85,16 +92,17 @@ class NetworkManager {
         this.errorCallback = onError;
 
         const hostId = `EHUTI-${shortCode}`;
-        console.log(`Attempting to join: ${hostId}`);
+        this.log(`Joining: ${hostId}`);
 
         const tryConnect = () => {
-            const conn = this.peer.connect(hostId);
+            // Revert to reliable: true to test if that was actually better
+            // Or keep it false. Let's try explicit serialization to avoid "binary" errors if that's the issue
+            const conn = this.peer.connect(hostId, { reliable: true });
             this.handleConnection(conn);
 
-            // Timeout safety
             setTimeout(() => {
                 if (!this.conn || !this.conn.open) {
-                    if (this.errorCallback) this.errorCallback("Connection timed out. (15s)");
+                    if (this.errorCallback) this.errorCallback("Timeout (15s). Check Logs.");
                 }
             }, 15000);
         };
@@ -112,7 +120,7 @@ class NetworkManager {
         this.conn = conn;
 
         this.conn.on('open', () => {
-            console.log('Connected!');
+            this.log('Connected!');
             if (this.connectionCallback) this.connectionCallback();
         });
 
@@ -121,8 +129,11 @@ class NetworkManager {
         });
 
         this.conn.on('close', () => {
-            console.log('Connection closed');
-            // Handle disconnect
+            this.log('Conn closed');
+        });
+
+        this.conn.on('error', (err) => {
+            this.log('Conn Err: ' + err);
         });
     }
 
