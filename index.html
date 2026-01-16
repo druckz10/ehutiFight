@@ -173,8 +173,10 @@
             }
         });
 
-        // PWA Reg
-        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+        // PWA Reg (Force Update with timestamp)
+        if ('serviceWorker' in navigator) {
+             navigator.serviceWorker.register('sw.js?v=' + new Date().getTime());
+        }
     </script>
 </body>
 
