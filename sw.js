@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ehutifight-v1.0.62';
+const CACHE_NAME = 'ehutifight-v1.0.63';
 const ASSETS = [
     './',
     './index.html',
