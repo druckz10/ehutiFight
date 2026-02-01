@@ -19,19 +19,17 @@ self.addEventListener('install', (e) => {
     );
 });
 
-// Activate: Clean old caches
+// Activate: Purge ALL caches to force update
 self.addEventListener('activate', (e) => {
     e.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) {
-                    console.log('[SW] Removing old cache', key);
-                    return caches.delete(key);
-                }
+                console.log('[SW] Purging cache:', key);
+                return caches.delete(key);
             }));
         })
     );
-    return self.clients.claim(); // Take control immediately
+    return self.clients.claim();
 });
 
 // Fetch: Network First, Fallback to Cache (Safer for Dev)
