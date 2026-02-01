@@ -116,14 +116,14 @@
             font-size: 32px;
         }
     </style>
-  <script type="module" crossorigin src="/ehutiFight/assets/index-BGF7vzpt.js"></script>
-  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-DY5lhzau.css">
+  <script type="module" crossorigin src="/ehutiFight/assets/index--f8xGhHo.js"></script>
+  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-DPSMljOI.css">
 </head>
 
 <body>
     <div
         style="position:fixed; bottom:10px; right:10px; color:rgba(255,255,255,0.5); font-family:monospace; z-index:9999; font-size:14px; pointer-events:none; background:rgba(0,0,0,0.5); padding:2px 5px; border-radius:3px;">
-        v2.1.4</div>
+        v2.1.5</div>
     <div id="game-container"></div>
 
     <div id="touch-controls">
@@ -134,6 +134,39 @@
 
         <div id="btn-jab" class="touch-btn">P</div>
         <div id="btn-kick" class="touch-btn">K</div>
+    </div>
+
+    <!-- Native Login UI (v2.1.5) -->
+    <div id="login-overlay" style="display:none;">
+        <div class="login-card">
+            <h2>EHUTI FIGHT</h2>
+            <div id="status-msg" style="color: #888; margin-bottom: 1rem; font-size: 0.9rem;">Login to save your
+                progress</div>
+
+            <div id="auth-form">
+                <div class="input-group">
+                    <label>Email</label>
+                    <input type="email" id="login-email" placeholder="example@gmail.com">
+                </div>
+                <div class="input-group">
+                    <label>Password</label>
+                    <input type="password" id="login-password" placeholder="••••••••">
+                </div>
+
+                <button class="auth-btn btn-login" id="btn-do-login">LOGIN</button>
+                <button class="auth-btn btn-register" id="btn-do-register" style="margin-top: 5px;">REGISTER</button>
+            </div>
+
+            <div class="social-separator">OR CONNECT WITH</div>
+
+            <div class="social-btns">
+                <div class="social-btn" id="btn-google" title="Google Login">
+                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" width="24">
+                </div>
+            </div>
+
+            <div class="guest-link" id="btn-guest">Continue as Guest</div>
+        </div>
     </div>
 
     <script>
@@ -168,6 +201,20 @@
             btn.addEventListener('mouseup', end);
         };
 
+        // Native Login UI Controls
+        window.showLoginUI = (visible) => {
+            const overlay = document.getElementById('login-overlay');
+            if (overlay) overlay.style.display = visible ? 'flex' : 'none';
+        };
+
+        window.setLoginStatus = (msg, color) => {
+            const status = document.getElementById('status-msg');
+            if (status) {
+                status.textContent = msg;
+                status.style.color = color;
+            }
+        };
+
         // Global visibility toggle
         window.setMobileControlsVisible = (visible) => {
             const controls = document.getElementById('touch-controls');
@@ -199,8 +246,8 @@
             }
         });
 
-        // --- CACHE KILL SWITCH (Force Refresh for v2.1.4) ---
-        const EXPECTED_VERSION = '2.1.4';
+        // --- CACHE KILL SWITCH (Force Refresh for v2.1.5) ---
+        const EXPECTED_VERSION = '2.1.5';
         if (localStorage.getItem('app_v') !== EXPECTED_VERSION) {
             localStorage.setItem('app_v', EXPECTED_VERSION);
             if ('serviceWorker' in navigator) {
@@ -213,7 +260,7 @@
 
         // PWA Reg (Force Update)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=2.1.4', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('sw.js?v=2.1.5', { updateViaCache: 'none' })
                 .then(reg => {
                     reg.update();
                 });
