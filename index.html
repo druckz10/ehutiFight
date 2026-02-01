@@ -196,9 +196,22 @@
             }
         });
 
-        // PWA Reg (Force Update with timestamp)
+        // PWA Reg (Force Update)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=' + new Date().getTime());
+            navigator.serviceWorker.register('sw.js?v=2.1.0', { updateViaCache: 'none' })
+                .then(reg => {
+                    // Check for updates every time page loads
+                    reg.update();
+                });
+
+            // Reload page if a new service worker takes over
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    window.location.reload();
+                    refreshing = true;
+                }
+            });
         }
     </script>
 </body>
