@@ -116,8 +116,8 @@
             font-size: 32px;
         }
     </style>
-  <script type="module" crossorigin src="/ehutiFight/assets/index-DoCoQBuh.js"></script>
-  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-B1zgETzc.css">
+  <script type="module" crossorigin src="/ehutiFight/assets/index-DKOdDL2e.js"></script>
+  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-Dan9BQJC.css">
 </head>
 
 <body>
@@ -200,8 +200,8 @@
             }
         });
 
-        // --- CACHE KILL SWITCH (Force Refresh for v2.1.0) ---
-        const EXPECTED_VERSION = '2.1.0-C';
+        // --- CACHE KILL SWITCH (Force Refresh for v2.1.1) ---
+        const EXPECTED_VERSION = '2.1.1-A';
         if (localStorage.getItem('app_v') !== EXPECTED_VERSION) {
             console.log("OLD VERSION DETECTED. PURGING SW AND RELOADING...");
             localStorage.setItem('app_v', EXPECTED_VERSION);
@@ -215,7 +215,7 @@
 
         // PWA Reg (Force Update)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=2.1.0', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('sw.js?v=2.1.1', { updateViaCache: 'none' })
                 .then(reg => {
                     // Check for updates every time page loads
                     reg.update();
