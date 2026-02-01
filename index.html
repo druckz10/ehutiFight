@@ -48,78 +48,89 @@
 
         .touch-btn {
             position: absolute;
-            background: rgba(255, 255, 255, 0.1);
-            border: 2px solid rgba(255, 255, 255, 0.3);
+            background: rgba(255, 255, 255, 0.15);
+            border: 2px solid rgba(255, 255, 255, 0.4);
             border-radius: 50%;
             pointer-events: auto;
             touch-action: none;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: bold;
+            font-size: 24px;
+            user-select: none;
         }
 
         .touch-btn:active {
-            background: rgba(255, 255, 255, 0.4);
+            background: rgba(233, 69, 96, 0.6);
+            transform: scale(1.1);
         }
 
         /* D-Pad */
         #dpad-left {
-            bottom: 40px;
+            bottom: 30px;
             left: 20px;
-            width: 60px;
-            height: 60px;
+            width: 80px;
+            height: 80px;
         }
 
         #dpad-right {
-            bottom: 40px;
-            left: 160px;
-            width: 60px;
-            height: 60px;
+            bottom: 30px;
+            left: 140px;
+            width: 80px;
+            height: 80px;
         }
 
         #dpad-up {
-            bottom: 110px;
-            left: 90px;
-            width: 60px;
-            height: 60px;
+            bottom: 120px;
+            left: 80px;
+            width: 80px;
+            height: 80px;
         }
 
         #dpad-down {
-            bottom: 40px;
-            left: 90px;
-            width: 60px;
-            height: 60px;
+            bottom: 30px;
+            left: 80px;
+            width: 80px;
+            height: 80px;
         }
 
         /* Actions */
         #btn-kick {
-            bottom: 60px;
-            right: 40px;
-            width: 80px;
-            height: 80px;
-            background: rgba(255, 0, 0, 0.2);
+            bottom: 50px;
+            right: 30px;
+            width: 100px;
+            height: 100px;
+            background: rgba(233, 69, 96, 0.3);
+            font-size: 32px;
         }
 
         #btn-jab {
-            bottom: 40px;
-            right: 140px;
-            width: 80px;
-            height: 80px;
-            background: rgba(0, 0, 255, 0.2);
+            bottom: 30px;
+            right: 150px;
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 255, 255, 0.2);
+            font-size: 32px;
         }
     </style>
-  <script type="module" crossorigin src="/ehutiFight/assets/index-8BH74OU_.js"></script>
-  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-ohvEiMy6.css">
+  <script type="module" crossorigin src="/ehutiFight/assets/index-DoCoQBuh.js"></script>
+  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-B1zgETzc.css">
 </head>
 
 <body>
     <div id="game-container"></div>
 
     <div id="touch-controls">
-        <div id="dpad-left" class="touch-btn"></div>
-        <div id="dpad-right" class="touch-btn"></div>
-        <div id="dpad-up" class="touch-btn"></div>
-        <div id="dpad-down" class="touch-btn"></div>
+        <div id="dpad-left" class="touch-btn">◀</div>
+        <div id="dpad-right" class="touch-btn">▶</div>
+        <div id="dpad-up" class="touch-btn">▲</div>
+        <div id="dpad-down" class="touch-btn">▼</div>
 
-        <div id="btn-jab" class="touch-btn"></div>
-        <div id="btn-kick" class="touch-btn"></div>
+        <div id="btn-jab" class="touch-btn">P</div>
+        <div id="btn-kick" class="touch-btn">K</div>
     </div>
 
     <script>
@@ -160,9 +171,9 @@
             if (!controls) return;
 
             // Only auto-show if on mobile/small screen OR forced by URL
-            const isMobile = (window.matchMedia("(hover: none) and (pointer: coarse)").matches) || 
-                             (window.innerWidth <= 900) || 
-                             (window.location.search.includes('mobile'));
+            const isMobile = (window.matchMedia("(hover: none) and (pointer: coarse)").matches) ||
+                (window.innerWidth <= 900) ||
+                (window.location.search.includes('mobile'));
 
             if (visible && isMobile) {
                 controls.style.display = 'block';
@@ -181,7 +192,7 @@
 
             // Initial state is hidden (unless forced debug)
             if (window.location.search.includes('mobile_force')) {
-                 document.getElementById('touch-controls').style.display = 'block';
+                document.getElementById('touch-controls').style.display = 'block';
             }
         });
 
