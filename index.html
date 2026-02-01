@@ -121,10 +121,9 @@
 </head>
 
 <body>
-    <!-- Version Watermark -->
     <div
-        style="position:fixed; top:10px; right:10px; color:rgba(255,255,255,0.3); font-family:monospace; z-index:9999; font-size:12px; pointer-events:none;">
-        v2.1.0</div>
+        style="position:fixed; bottom:10px; right:10px; color:rgba(255,255,255,0.5); font-family:monospace; z-index:9999; font-size:14px; pointer-events:none; background:rgba(0,0,0,0.5); padding:2px 5px; border-radius:3px;">
+        v2.1.2</div>
     <div id="game-container"></div>
 
     <div id="touch-controls">
@@ -200,28 +199,25 @@
             }
         });
 
-        // --- CACHE KILL SWITCH (Force Refresh for v2.1.1) ---
-        const EXPECTED_VERSION = '2.1.1-A';
+        // --- CACHE KILL SWITCH (Force Refresh for v2.1.2) ---
+        const EXPECTED_VERSION = '2.1.2';
         if (localStorage.getItem('app_v') !== EXPECTED_VERSION) {
-            console.log("OLD VERSION DETECTED. PURGING SW AND RELOADING...");
             localStorage.setItem('app_v', EXPECTED_VERSION);
             if ('serviceWorker' in navigator) {
                 navigator.serviceWorker.getRegistrations().then(regs => {
                     for (let reg of regs) reg.unregister();
-                    setTimeout(() => window.location.reload(true), 500);
+                    window.location.reload();
                 });
             }
         }
 
         // PWA Reg (Force Update)
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js?v=2.1.1', { updateViaCache: 'none' })
+            navigator.serviceWorker.register('sw.js?v=2.1.2', { updateViaCache: 'none' })
                 .then(reg => {
-                    // Check for updates every time page loads
                     reg.update();
                 });
 
-            // Reload page if a new service worker takes over
             let refreshing = false;
             navigator.serviceWorker.addEventListener('controllerchange', () => {
                 if (!refreshing) {
