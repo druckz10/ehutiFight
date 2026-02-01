@@ -7,40 +7,42 @@
     <title>ehutiFight</title>
     <link rel="manifest" href="manifest.json">
     <style>
+        /* Full Screen Reset */
+        html,
         body {
             margin: 0;
             padding: 0;
-            background-color: #1a1a1a;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            width: 100%;
+            height: 100%;
+            background-color: #000;
+            /* purely black blackground */
             overflow: hidden;
+            /* No scrollbars */
             touch-action: none;
             user-select: none;
             -webkit-user-select: none;
         }
 
         #game-container {
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
             width: 100%;
             height: 100%;
+            padding: 0;
+            margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
+            /* Box shadow removed for cleaner full screen look */
         }
 
         /* Touch Controls */
         #touch-controls {
             display: none;
-            /* Hidden by default, shown via JS/CSS on mobile */
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
             pointer-events: none;
-            /* Let clicks pass through to game if needed, but buttons will catch em */
             z-index: 100;
         }
 
@@ -102,16 +104,9 @@
             height: 80px;
             background: rgba(0, 0, 255, 0.2);
         }
-
-        @media (hover: none) and (pointer: coarse),
-        (max-width: 900px) {
-            #touch-controls {
-                display: block;
-            }
-        }
     </style>
-  <script type="module" crossorigin src="/ehutiFight/assets/index-xGvccJCT.js"></script>
-  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-tn0RQdqM.css">
+  <script type="module" crossorigin src="/ehutiFight/assets/index-8BH74OU_.js"></script>
+  <link rel="stylesheet" crossorigin href="/ehutiFight/assets/index-ohvEiMy6.css">
 </head>
 
 <body>
@@ -159,6 +154,23 @@
             btn.addEventListener('mouseup', end);
         };
 
+        // Global visibility toggle
+        window.setMobileControlsVisible = (visible) => {
+            const controls = document.getElementById('touch-controls');
+            if (!controls) return;
+
+            // Only auto-show if on mobile/small screen OR forced by URL
+            const isMobile = (window.matchMedia("(hover: none) and (pointer: coarse)").matches) || 
+                             (window.innerWidth <= 900) || 
+                             (window.location.search.includes('mobile'));
+
+            if (visible && isMobile) {
+                controls.style.display = 'block';
+            } else {
+                controls.style.display = 'none';
+            }
+        };
+
         window.addEventListener('load', () => {
             bindBtn('dpad-left', 'left');
             bindBtn('dpad-right', 'right');
@@ -167,15 +179,15 @@
             bindBtn('btn-jab', 'attack1');
             bindBtn('btn-kick', 'attack2');
 
-            // Force show controls if in URL param (debug)
-            if (window.location.search.includes('mobile')) {
-                document.getElementById('touch-controls').style.display = 'block';
+            // Initial state is hidden (unless forced debug)
+            if (window.location.search.includes('mobile_force')) {
+                 document.getElementById('touch-controls').style.display = 'block';
             }
         });
 
         // PWA Reg (Force Update with timestamp)
         if ('serviceWorker' in navigator) {
-             navigator.serviceWorker.register('sw.js?v=' + new Date().getTime());
+            navigator.serviceWorker.register('sw.js?v=' + new Date().getTime());
         }
     </script>
 </body>
